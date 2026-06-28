@@ -284,3 +284,25 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+
+# Render free plan için health check server
+import threading
+import http.server
+
+class HealthHandler(http.server.BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"OK")
+    def log_message(self, format, *args):
+        pass
+
+def health_server():
+    port = int(os.environ.get("PORT", 10000))
+    server = http.server.HTTPServer(("0.0.0.0", port), HealthHandler)
+    server.serve_forever()
+
+# Health server'ı arka planda başlat
+t = threading.Thread(target=health_server, daemon=True)
+t.start()
